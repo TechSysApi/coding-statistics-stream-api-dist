@@ -4,7 +4,7 @@ info:
   description: 'Statistic Data from the new Coding Solution'
   contact:
     name: erkennen.codieren.pakete@post.ch
-  version: 0.2.0-feature-initial-api-setup.3
+  version: 0.2.0-feature-initial-api-setup.4
 host: 'server:8080'
 basePath: Kafka
 paths:
