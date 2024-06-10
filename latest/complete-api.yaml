@@ -4,7 +4,7 @@ info:
   description: 'Statistic Data from the new Coding Solution'
   contact:
     name: erkennen.codieren.pakete@post.ch
-  version: 0.2.0-feature-initial-api-setup.2
+  version: 0.2.0-feature-initial-api-setup.3
 host: 'server:8080'
 basePath: Kafka
 paths:
@@ -34,6 +34,20 @@ definitions:
       - CODING_REQUEST
       - WAITING
     description: "CONNECTOR_PLATFORM       The coding request is received in the connector and forwarded to the WNG platform.\nPRIORITIZER              The coding request lives in the prioritizer/queue.\nGET_PRIORITIZER          The coding request gets requested and returned to the prioritizer/queue.\nCODING_CLIENT            The coding request is at the coding client.\nBUFFER_CODING_CLIENT     The coding request is buffered in the coding client.\nDISPLAYED_CODING_CLIENT  The coding request is displayed in the coding client.\nCONVERT_IMAGE            The images gets converted.\nTRANSFER                 The Transfer of the the coding request and result between the coding client and the WNG platform.\nPLATTFORM_SDSC           The coding result is received in the WNG platform and forwarded to the SDSC.\nCODING_REQUEST           The coding request lives in the WNG platform.\nWAITING                  The coder was experiencing a grey waiting screen before it could code this request."
+  CodedExternalCarrierId:
+    type: object
+    properties:
+      mailpieceId:
+        type: string
+        description: 'Identifier of the mailpiece from the external carrier.'
+      type:
+        $ref: 'ExternalCarrierType'
+        description: 'Type of the external carrier id.'
+    required:
+      - mailpieceId
+      - type
+    additionalProperties: false
+    description: 'Mailpiece identifier of external carrier. Contains the identifier and the type of the external carrier id.'
   CodedSortingUnit:
     type: object
     properties:
@@ -111,6 +125,10 @@ definitions:
       - instance
     additionalProperties: false
     description: "Describes which system provided the information. This is meant to be used for diagnositcs\nand should not be used to infer any business cases."
+  ExternalCarrierType:
+    type: string
+    enum:
+      - FEDEX
   IdentifierTags:
     type: object
     properties:
@@ -124,21 +142,6 @@ definitions:
         items:
           type: string
         description: "Contains the list of international identifiers to track a mail item internationally.\nThe id is printed on the mailpiece by the sender."
-      nationalLetterIds:
-        type: array
-        items:
-          type: string
-        description: "Contains the list of national identifiers to track a letter item within the country.\nThe id can only be created once during a machine sorting cycle and printed on the letter."
-      internationalLetterIds:
-        type: array
-        items:
-          type: string
-        description: "Contains the list of Universal Postal Union Identifier (UPU-Id) as technical identifiers to track an letter item internationally.\nThe id can only be created once during a machine sorting cycle and printed on the letter.\nRemarks: BDE converts the UPU-Id into a shorter version"
-      customerLetterIds:
-        type: array
-        items:
-          type: string
-        description: 'Contains the list of national identifiers from the customer to track a letter item within the country.'
       customsNumbers:
         type: array
         items:
@@ -154,14 +157,11 @@ definitions:
         items:
           type: string
         description: 'Contains the list of identifiers to track mix mail with a data matrix code (DMC80).'
-      sortingProcessId:
-        type: string
-        description: 'The technical identifier to track an mail item during the complete sorting process. UPU-Id is set as default.'
-        maxLength: 200
-      sortingProcessStepId:
-        type: string
-        description: "Contains the Unique Mailpiece-Image Identifier (UMI) as machine independent technical identifier to reference a machine sorting cycle of a mail item. The identifier is used to access the mail images.\nThe id is created during every machine sorting cycle."
-        maxLength: 200
+      externalCarrierIds:
+        type: array
+        items:
+          $ref: 'CodedExternalCarrierId'
+        description: 'Contains the list of identifier and type from external carriers like Fedex.'
     additionalProperties: false
     description: 'Contains a list of logistic or technical identifiers to track a mail item within a specific context.'
   TimeToLifeType:
