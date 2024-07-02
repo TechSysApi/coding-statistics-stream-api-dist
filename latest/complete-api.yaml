@@ -4,7 +4,7 @@ info:
   description: 'Statistic Data from the Coding Solution. The events are generated after every coding operation, currently only for video coding. The data is crucial for querying and analysis in AWS Athena by DWH LS OPS.'
   contact:
     name: erkennen.codieren.pakete@post.ch
-  version: 0.2.0-feature-initial-api-setup.5
+  version: 0.2.0-feature-initial-api-setup.7
 host: 'server:8080'
 basePath: Kafka
 paths:
@@ -86,7 +86,6 @@ definitions:
       - processingItemId
       - mailpieceGlobalKey
       - source
-      - video
     additionalProperties: false
   CodingEventProducer:
     type: string
@@ -164,16 +163,25 @@ definitions:
       - locationKey
     additionalProperties: false
     description: 'Sorting unit at a location performing the sorting process step.'
-  TimeToLifeType:
+  TimeToLiveTypeCase:
     type: string
     enum:
-      - TIME_1
-      - TIME_2
-      - TIME_3
-      - WEIGHT_1
-      - WEIGHT_2
-      - WEIGHT_3
-    description: "TIME_1    The first maximum time, in milliseconds, the coding task is supposed to take before it is coded. If the platform cannot code the item within this\ntime, it will use TIME_2 to as a new timeout.\nTIME_2    The second maximum time, in milliseconds, the coding task is supposed to take before it is coded. If the platform cannot code the item within this\ntime, it will use TIME_3 to as a new timeout.\nTIME_3    The third maximum time, in milliseconds, the coding task is supposed to take before it is coded.\nWEIGHT_1  The priority given to the first maximum time (TIME_1) to define how long the coding task is supposed to take before it is coded.\nWEIGHT_2  The priority given to the second maximum time (TIME_2) to define how long the coding task is supposed to take before it is coded.\nWEIGHT_3  The priority given to the third maximum time (TIME_3) to define how long the coding task is supposed to take before it is coded."
+      - TIME
+      - WEIGHT
+    description: "TIME     Defines the maximum time in milliseconds that the coding task is expected to take before it is coded.\nWEIGHT   Determines the priority assigned to the maximum time to define how long the coding task is supposed to take before it is coded."
+  TimeToLiveType:
+    type: object
+    properties:
+      case:
+        $ref: 'TimeToLiveTypeCase'
+        description: 'Specifies whether the time or weight is used.'
+      value:
+        $ref: 'Int'
+        description: "The numerical value that sets the order or priority of the time limits.\n1: The first maximum time value or the highest priority.\n2: The second maximum time value or the medium priority.\n3: The third maximum time value or the lowest priority."
+    required:
+      - case
+      - value
+    additionalProperties: false
   VideoActivity:
     type: object
     properties:
@@ -206,24 +214,30 @@ definitions:
       codingResultType:
         $ref: 'VideoCodingResultType'
         description: 'The coding result type which indicates the outcome of the coding task.'
+      priority:
+        $ref: 'Int'
+        description: "The priority of coding task is relevant if sorting system asks for deeper coding. Higher value means higher priority, 0 is the lowest possible priority.\nThe submitting system can use the priority to inform the coding system for which requests it needs a result more quickly.\ne.g. priority 3 when sorting system has not yet found a addressing destination (-> sorting is not possible) or priority 1 if\nthe addressing destination is available but the recipient is unknown (-> all we need for sorting, but services cannot be applied)."
+        minimum: 0
       activities:
         type: array
         items:
           $ref: 'VideoActivity'
         description: 'Activities the coder or the platforms performs during a coding task and the duration of the activity.'
-      timeToLife:
+      timeToLive:
         type: array
         items:
-          $ref: 'VideoTimeToLife'
+          $ref: 'VideoTimeToLive'
         description: 'The maximum time, in milliseconds, the coding task is supposed to take before it is coded.'
       keystrokes:
         type: string
-        description: 'The keystrokes entered by the coder to code the coding task.'
+        description: "The keystrokes entered by the coder to code the coding task.\nThis field can be null if there was no coding done for the coding task.\ne.g. codingResultType = REJECT_TIMEOUT."
     required:
       - codingTask
       - codingTaskType
       - codingResultType
-      - keystrokes
+      - priority
+      - activities
+      - timeToLive
     additionalProperties: false
     description: 'Information captured by the coding systems during coding'
   VideoCodingTaskType:
@@ -259,6 +273,7 @@ definitions:
     required:
       - sortingUnit
       - serviceProvider
+      - codingResult
     additionalProperties: false
   VideoServiceProvider:
     type: object
@@ -273,11 +288,13 @@ definitions:
       - name
       - location
     additionalProperties: false
-  VideoTimeToLife:
+  VideoTimeToLive:
     type: object
     properties:
       type:
-        $ref: 'TimeToLifeType'
+        type: array
+        items:
+          $ref: 'TimeToLiveType'
         description: "The maximum time and its priority define how long the coding task is supposed to take before it is coded.\nIf this information is not recieved, the Video Coding System will load the default setting."
       duration:
         $ref: 'Int'
