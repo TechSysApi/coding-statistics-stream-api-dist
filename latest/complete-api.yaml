@@ -4,7 +4,7 @@ info:
   description: 'Statistic Data from the Coding Solution. The events are generated after every coding operation, currently only for video coding. The data is crucial for querying and analysis in AWS Athena by DWH LS OPS.'
   contact:
     name: erkennen.codieren.pakete@post.ch
-  version: 0.2.0
+  version: 0.2.1
 host: 'server:8080'
 basePath: Kafka
 paths:
