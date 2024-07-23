@@ -4,7 +4,7 @@ info:
   description: 'Statistic Data from the Coding Solution. The events are generated after every coding operation, currently only for video coding. The data is crucial for querying and analysis in AWS Athena by DWH LS OPS.'
   contact:
     name: erkennen.codieren.pakete@post.ch
-  version: 0.2.1
+  version: 1.0.0
 host: 'server:8080'
 basePath: Kafka
 paths:
@@ -48,6 +48,22 @@ definitions:
       - type
     additionalProperties: false
     description: 'Mailpiece identifier of external carrier. Contains the identifier and the type of the external carrier id.'
+  CodedSimulationOrigin:
+    type: string
+    enum:
+      - SIMULATOR
+      - FRANKING_LICENSE
+      - LOCATION
+    description: "Describes how/where this event was simulated.\n- SIMULATOR: A simulator was used, no real mailpiece exists\n- FRANKING_LICENSE: The parcel belongs to a Franking license that is use for testing only\n- LOCATION: the location where that mailpiece was sorted is marked as a test location (eg. testing before go live)"
+  CodedSimulation:
+    type: object
+    properties:
+      origin:
+        $ref: 'CodedSimulationOrigin'
+    required:
+      - origin
+    additionalProperties: false
+    description: "Marks this event as a simulated event. This means that the mailpiece referenced in this message should not be considered a production mailpiece.\nIt is in the responsibility of the consumer to decide what to do with this information. For most use cases this event can be processed like\nany other event, but should be marks as a simulated event. Some actions should not be executed for simulated events\n(eg. no notification should be sent to the actual customer).\nSimulated events must not affect any non-simulated mailpieces in any way.\n\nThe Simulation object provides additional information about the purpose of this simulation."
   DateTime:
     type: string
     description: "<a href=\"https://swagger.io/docs/specification/data-models/data-types/#string\">String @format date-time</a>,\nas defined by <a href=\"https://tools.ietf.org/html/rfc3339#section-5.6\">RFC 3339, section 5.6</a>,\nfor example: <code>2014-05-22T10:42:42.542+00:00</code>."
@@ -71,14 +87,17 @@ definitions:
       mailpieceGlobalKey:
         type: string
         description: "Globally unique key for the mailpiece.\nOnly a single mailpiece may have the same Key and the Key is never to be reused again, allowing to identify every mailpiece\never processed.\nPrimary key 🔑"
+      simulation:
+        $ref: 'CodedSimulation'
+        description: 'If simulation is not null, this event belongs to a simulation and should not be considered productive.'
       idTags:
         $ref: 'IdentifierTags'
         description: 'Contains a list of ids identifying the processing item.'
       source:
         $ref: 'EventSource'
         description: 'The system which publishes the event.'
-      video:
-        $ref: 'VideoEvents'
+      videoCoded:
+        $ref: 'VideoCodedEvent'
         description: 'Mailpiece has been coded during the sorting process by video mailpice coding (VMC).'
     required:
       - eventId
@@ -195,6 +214,23 @@ definitions:
       - type
       - duration
     additionalProperties: false
+  VideoCodedEvent:
+    type: object
+    properties:
+      sortingUnit:
+        $ref: 'SortingUnit'
+        description: 'Sorting unit where the mailpiece was being processed.'
+      serviceProvider:
+        $ref: 'VideoServiceProvider'
+        description: 'Service provider which coded the coding task.'
+      codingResult:
+        $ref: 'VideoCodingResult'
+        description: 'Contains the coding results per coding task.'
+    required:
+      - sortingUnit
+      - serviceProvider
+      - codingResult
+    additionalProperties: false
   VideoCodingResultType:
     type: string
     enum:
@@ -258,23 +294,6 @@ definitions:
       - EXTERNAL_POSTCODE
       - EXTERNAL_ADDRESS
     description: "INTERNAL_REGION    Component VCS CH: Task in the video coding system where the coder detects address region of interest (ROI) elements on an image.\nINTERNAL_POSTCODE  Component VCS CH: Task in the video coding system where the coder enters the postcode based on an address region of interest (ROI) image.\nINTERNAL_ADDRESS   Component VCS CH: Task in the video coding system where the coder enters the recipient address based on an address region of interest (ROI) image.\nEXTERNAL_REGION    Component VCS Offshore: Task in the video coding system where the coder detects address region of interest (ROI) elements on an image.\nEXTERNAL_POSTCODE  Component VCS Offshore: Task in the video coding system where the coder enters the postcode based on an address region of interest (ROI) image.\nEXTERNAL_ADDRESS   Component VCS Offshore: Task in the video coding system where the coder enters the recipient address based on an address region of interest (ROI) image."
-  VideoEvents:
-    type: object
-    properties:
-      sortingUnit:
-        $ref: 'SortingUnit'
-        description: 'Sorting unit where the mailpiece was being processed.'
-      serviceProvider:
-        $ref: 'VideoServiceProvider'
-        description: 'Service provider which coded the coding task.'
-      codingResult:
-        $ref: 'VideoCodingResult'
-        description: 'Contains the coding results per coding task.'
-    required:
-      - sortingUnit
-      - serviceProvider
-      - codingResult
-    additionalProperties: false
   VideoServiceProvider:
     type: object
     properties:
