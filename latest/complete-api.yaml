@@ -4,7 +4,7 @@ info:
   description: 'Statistic Data from the Coding Solution. The events are generated after every coding operation, currently only for video coding. The data is crucial for querying and analysis in AWS Athena by DWH LS OPS.'
   contact:
     name: erkennen.codieren.pakete@post.ch
-  version: 1.0.0-feature-remarks-review.1
+  version: 1.0.0-feature-remarks-review.2
 host: 'server:8080'
 basePath: Kafka
 paths:
@@ -97,7 +97,7 @@ definitions:
         $ref: 'EventSource'
         description: 'The system which publishes the event.'
       videoCoded:
-        $ref: 'VideoCodedEvents'
+        $ref: 'VideoCodedEvent'
         description: 'Mailpiece has been coded during the sorting process by video mailpice coding (VMC).'
     required:
       - eventId
@@ -214,7 +214,7 @@ definitions:
       - type
       - duration
     additionalProperties: false
-  VideoCodedEvents:
+  VideoCodedEvent:
     type: object
     properties:
       sortingUnit:
