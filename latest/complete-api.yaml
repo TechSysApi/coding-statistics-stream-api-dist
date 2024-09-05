@@ -1,10 +1,10 @@
 swagger: '2.0'
 info:
   title: 'Coding Statistics Stream API'
-  description: 'Statistic Data from the Coding Solution. The events are generated after every coding operation, currently only for video coding. The data is crucial for querying and analysis in AWS Athena by DWH LS OPS.'
+  description: 'Statistic Data from the Coding Solution. The events are generated after every coding operation, currently for video and manual coding. The data is crucial for querying and analysis in AWS Athena by DWH LS OPS.'
   contact:
     name: erkennen.codieren.pakete@post.ch
-  version: 2.0.0
+  version: 2.1.0
 host: 'server:8080'
 basePath: Kafka
 paths:
@@ -101,7 +101,10 @@ definitions:
         description: 'Sorting unit where the mailpiece was being processed.'
       videoCoded:
         $ref: 'VideoCodedEvent'
-        description: 'Mailpiece has been coded during the sorting process by video mailpice coding (VMC).'
+        description: 'Mailpiece has been coded during the sorting process by video mailpiece coding (VMC).'
+      manualCoded:
+        $ref: 'ManualCodedEvent'
+        description: 'Mailpiece has been coded during the sorting process by manual mailpiece coding (MMC).'
     required:
       - eventId
       - timestamp
@@ -119,6 +122,19 @@ definitions:
       - MANUAL_CODING_BULK_SCANNING
       - AUTOMATIC_CODING
     description: "VIDEO_CODING                 Component where information is remotely captured or entered by a coder based on an image (SPS Vietnam / other).\nMANUAL_CODING_REJECT         Component where barcodes, weight, dimensions and address information are captured or entered (manually) (MMC).\nMANUAL_CODING_BULK           Component where barcodes, weight, dimensions and address information for bulky goods are captured or entered (manually or partially automated) (MMCB).\nMANUAL_CODING_BULK_SCANNING  Component where a coder manually captures barcodes and other specific information for bulky goods (MMCBS).\nAUTOMATIC_CODING             Automatic coding system using optical character recognition (OCR)."
+  DeliveryPointType:
+    type: string
+    enum:
+      - DOMICILE
+      - PICK_POST
+      - PARCEL_TERMINAL
+      - POBOX
+      - POSTE_RESTANTE
+      - COMPANY_POSTCODE
+      - INTERNATIONAL
+      - MILITARY
+      - INTERNAL_POSTCODE
+    description: "DOMICILE = Domiziladresse\nPICK_POST = Pickpost\nPARCEL_TERMINAL = myPost24\nPOBOX = Post Office Box (Postfach)\nPOSTE_RESTANTE = Retain at swiss post (Postlagernd)\nCOMPANY_POSTCODE = Company Postcode indicates (FirmenPLZ)\nINTERNATIONAL = International address (Export)\nMILITARY = Military address\nINTERNAL_POSTCODE = Swiss post internal postcode"
   EventSource:
     type: object
     properties:
@@ -172,6 +188,129 @@ definitions:
         description: 'Contains the list of identifier and type from external carriers like Fedex.'
     additionalProperties: false
     description: 'Contains a list of logistic or technical identifiers to track a mail item within a specific context.'
+  ManualCodedEvent:
+    type: object
+    properties:
+      codingResult:
+        $ref: 'ManualCodingResult'
+        description: 'Contains the coding results per coding task.'
+      host:
+        type: string
+        description: 'Host name of the workstation.'
+      userId:
+        type: string
+        description: 'Identifies the coder of the mailpiece.'
+    required:
+      - codingResult
+      - host
+      - userId
+    additionalProperties: false
+  ManualCodingAddress:
+    type: object
+    properties:
+      deliveryPointType:
+        $ref: 'DeliveryPointType'
+        description: 'Type of a delivery point.'
+      personAddressKey:
+        type: string
+        description: 'Identifies a person at a domicile address (AMP-Key).'
+      houseKey:
+        type: string
+        description: 'Identifies the address physically located on the mailpiece (e.g. domicile, poBox, pickPost, parcel terminal / myPost 24 or other service address).'
+    required:
+      - deliveryPointType
+      - personAddressKey
+      - houseKey
+    additionalProperties: false
+  ManualCodingResult:
+    type: object
+    properties:
+      address:
+        $ref: 'ManualCodingAddress'
+        description: 'Contains information regarding the address located on a mailpiece.'
+      service:
+        $ref: 'ManualCodingService'
+        description: 'Services applied during the coding.'
+      duration:
+        $ref: 'Int'
+        description: 'Duration of the coding task in miliseconds.'
+    required:
+      - address
+      - service
+      - duration
+    additionalProperties: false
+    description: 'Information captured by the manual coding systems during coding.'
+  ManualCodingService:
+    type: object
+    properties:
+      deliveryPointType:
+        $ref: 'DeliveryPointType'
+        description: 'Type of a delivery point.'
+      personAddresKey:
+        type: string
+        description: 'Identifies a person at a domicile address (AMP-Key).'
+      houseKey:
+        type: string
+        description: 'Identifies the address physically located on the mailpiece (e.g. domicile, poBox, pickPost, parcel terminal / myPost 24 or other service address).'
+      serviceOrder:
+        $ref: 'ServiceOrder'
+        description: 'Service order that has been processed.'
+      processingState:
+        $ref: 'ProcessingStateType'
+        description: 'Indicates if the service order has been applied or not.'
+    required:
+      - deliveryPointType
+      - personAddresKey
+      - houseKey
+      - serviceOrder
+      - processingState
+    additionalProperties: false
+  ProcessingStateType:
+    type: string
+    enum:
+      - APPLIED
+      - CANCELLED
+    description: "APPLIED = Requested service has been applied.\nCANCELLED = Requested service has been cancelled."
+  ServiceOrderType:
+    type: string
+    enum:
+      - SINGLE_ORDER
+      - PERMANENT_ORDER
+      - TRANSFER_LABEL
+      - MILITARY
+      - MANUAL_ORDER
+      - SENDER_SINGLE_ORDER
+    description: "SINGLE_ORDER = order for a specific mailpiece (Empfänger-Einzelauftrag)\nPERMANENT_ORDER = order for personAddressKey (Empfänger-Dauerauftrag)\nTRANSFER_LABEL = order for a transfer label case\nMILITARY = order for a military address\nMANUAL_ORDER = order created at a manual coding station\nSENDER_SINGLE_ORDER = order for a specific mailpiece created by the sender"
+  ServiceOrder:
+    type: object
+    properties:
+      orderId:
+        type: string
+        description: 'Id of the service order from the source system.'
+      orderType:
+        $ref: 'ServiceOrderType'
+        description: 'Type of the service order. Indicates if it''s an order for a single mailpiece or if it''s an order for an address (personAddressKey).'
+      type:
+        $ref: 'ServiceType'
+        description: 'Type of the service which defines the address label type.'
+    required:
+      - orderId
+      - orderType
+      - type
+    additionalProperties: false
+  ServiceType:
+    type: string
+    enum:
+      - FORWARD
+      - FORWARD_POBOX
+      - DELIVERY_SLOT
+      - RETURN
+      - DELAYED_PICKUP
+      - DELAYED_DELIVERY
+      - INTERNATIONAL
+      - MILITARY
+      - INSPECTION
+    description: "FORWARD = forward mailpiece to another address\nFORWARD_POBOX = forward mailpiece from a postbox to a domicile address\nDELIVERY_SLOT = deliver mailpiece on a specific weekday / at a specific time window\nRETURN = the mailpiece has to returned to the sender\nDELAYED_PICKUP = the mailpiece has to retained at the postoffice for a specific time. After this time it must be picked up by the receiver.\nDELAYED_DELIVERY = the mailpiece has to retained at the postoffice for a specific time. After this time it must be delivered to the receiver.\nINTERNATIONAL = the mailpiece must be directed an export office\nMILITARY = Military address\nINSPECTION = inspect mailpiece via customs officer or sorting specialist"
   SortingUnit:
     type: object
     properties:
