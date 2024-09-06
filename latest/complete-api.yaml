@@ -4,7 +4,7 @@ info:
   description: 'Statistic Data from the Coding Solution. The events are generated after every coding operation, currently for video and manual coding. The data is crucial for querying and analysis in AWS Athena by DWH LS OPS.'
   contact:
     name: erkennen.codieren.pakete@post.ch
-  version: 2.1.0
+  version: 2.2.0
 host: 'server:8080'
 basePath: Kafka
 paths:
@@ -235,8 +235,6 @@ definitions:
         $ref: 'Int'
         description: 'Duration of the coding task in miliseconds.'
     required:
-      - address
-      - service
       - duration
     additionalProperties: false
     description: 'Information captured by the manual coding systems during coding.'

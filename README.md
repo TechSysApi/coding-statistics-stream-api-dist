@@ -7,3 +7,4 @@
 - [v1.0.0](https://TechSysApi.github.io/coding-statistics-stream-api-dist/v1.0.0/ui/?url=../complete-api.yaml)
 - [v2.0.0](https://TechSysApi.github.io/coding-statistics-stream-api-dist/v2.0.0/ui/?url=../complete-api.yaml)
 - [v2.1.0](https://TechSysApi.github.io/coding-statistics-stream-api-dist/v2.1.0/ui/?url=../complete-api.yaml)
+- [v2.2.0](https://TechSysApi.github.io/coding-statistics-stream-api-dist/v2.2.0/ui/?url=../complete-api.yaml)
