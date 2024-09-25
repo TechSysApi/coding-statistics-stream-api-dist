@@ -4,7 +4,7 @@ info:
   description: 'Statistic Data from the Coding Solution. The events are generated after every coding operation, currently for video and manual coding. The data is crucial for querying and analysis in AWS Athena by DWH LS OPS.'
   contact:
     name: erkennen.codieren.pakete@post.ch
-  version: 3.0.0-feature-mmc-military-address.2
+  version: 3.0.0-feature-mmc-military-address.3
 host: 'server:8080'
 basePath: Kafka
 paths:
