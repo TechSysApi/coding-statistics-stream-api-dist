@@ -4,7 +4,7 @@ info:
   description: 'Statistic Data from the Coding Solution. The events are generated after every coding operation, currently for video and manual coding. The data is crucial for querying and analysis in AWS Athena by DWH LS OPS.'
   contact:
     name: erkennen.codieren.pakete@post.ch
-  version: 3.0.0-feature-mmc-military-address.1
+  version: 3.0.0-feature-mmc-military-address.2
 host: 'server:8080'
 basePath: Kafka
 paths:
@@ -248,7 +248,7 @@ definitions:
       deliveryPointType:
         $ref: 'DeliveryPointType'
         description: 'Type of a delivery point.'
-      personAddresKey:
+      personAddressKey:
         type: string
         description: 'Identifies a person at a domicile address (AMP-Key).'
       houseKey:
