@@ -4,7 +4,7 @@ info:
   description: 'Statistic Data from the Coding Solution. The events are generated after every coding operation, currently for video and manual coding. The data is crucial for querying and analysis in AWS Athena by DWH LS OPS.'
   contact:
     name: erkennen.codieren.pakete@post.ch
-  version: 2.2.0
+  version: 3.0.0
 host: 'server:8080'
 basePath: Kafka
 paths:
@@ -217,10 +217,14 @@ definitions:
       houseKey:
         type: string
         description: 'Identifies the address physically located on the mailpiece (e.g. domicile, poBox, pickPost, parcel terminal / myPost 24 or other service address).'
+      countryKey:
+        type: string
+        description: 'Identifies the country physically located on the mailpiece (ID in the country-table in MDS).'
+      militaryKey:
+        type: string
+        description: "Identifies the MLZ (Militärleitzahl in German) physically located on the mailpiece.\nThe military key (MLZ) is a routing number for mail to and from members of the Swiss Armed Forces, the MLZ is used when a troop is on field duty.\nA MLZ is assigned to a troop of the Swiss Army."
     required:
       - deliveryPointType
-      - personAddressKey
-      - houseKey
     additionalProperties: false
   ManualCodingResult:
     type: object
@@ -244,12 +248,18 @@ definitions:
       deliveryPointType:
         $ref: 'DeliveryPointType'
         description: 'Type of a delivery point.'
-      personAddresKey:
+      personAddressKey:
         type: string
         description: 'Identifies a person at a domicile address (AMP-Key).'
       houseKey:
         type: string
         description: 'Identifies the address physically located on the mailpiece (e.g. domicile, poBox, pickPost, parcel terminal / myPost 24 or other service address).'
+      countryKey:
+        type: string
+        description: 'Identifies the country physically located on the mailpiece (ID in the country-table in MDS).'
+      militaryKey:
+        type: string
+        description: "Identifies the MLZ (Militärleitzahl in German) physically located on the mailpiece.\nThe military key (MLZ) is a routing number for mail to and from members of the Swiss Armed Forces, the MLZ is used when a troop is on field duty.\nA MLZ is assigned to a troop of the Swiss Army."
       serviceOrder:
         $ref: 'ServiceOrder'
         description: 'Service order that has been processed.'
@@ -258,8 +268,6 @@ definitions:
         description: 'Indicates if the service order has been applied or not.'
     required:
       - deliveryPointType
-      - personAddresKey
-      - houseKey
       - serviceOrder
       - processingState
     additionalProperties: false
