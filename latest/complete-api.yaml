@@ -4,7 +4,7 @@ info:
   description: 'Statistic Data from the Coding Solution. The events are generated after every coding operation, currently for video and manual coding. The data is crucial for querying and analysis in AWS Athena by DWH LS OPS.'
   contact:
     name: erkennen.codieren.pakete@post.ch
-  version: 4.0.0-feature-add-customer-and-userid.1
+  version: 4.0.0-feature-add-customer-and-userid.2
 host: 'server:8080'
 basePath: Kafka
 paths:
@@ -461,7 +461,7 @@ definitions:
         type: string
         description: 'The name of the service provider location which coded the coding task.'
       userId:
-        $ref: 'Int'
+        type: string
         description: "The userId of the coder that coded the coding task.\nThis field can be null if there was no coding done for the coding task.\ne.g. codingResultType = REJECT_TIMEOUT."
     required:
       - name
