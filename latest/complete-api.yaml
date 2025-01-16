@@ -4,7 +4,7 @@ info:
   description: 'Statistic Data from the Coding Solution. The events are generated after every coding operation, currently for video and manual coding. The data is crucial for querying and analysis in AWS Athena by DWH LS OPS.'
   contact:
     name: erkennen.codieren.pakete@post.ch
-  version: 4.0.0
+  version: 4.1.0-feature-add-vmc-countrykey.1
 host: 'server:8080'
 basePath: Kafka
 paths:
@@ -411,6 +411,9 @@ definitions:
         $ref: 'Int'
         description: "The priority of coding task is relevant if sorting system asks for deeper coding. Higher value means higher priority, 0 is the lowest possible priority.\nThe submitting system can use the priority to inform the coding system for which requests it needs a result more quickly.\ne.g. priority 3 when sorting system has not yet found a addressing destination (-> sorting is not possible) or priority 1 if\nthe addressing destination is available but the recipient is unknown (-> all we need for sorting, but services cannot be applied)."
         minimum: 0
+      countryKey:
+        type: string
+        description: "Identifies the country physically located on the mailpiece (ISO 3166-1 alpha-2)\nThis field can be null if there was no coding done for the coding task.\ne.g. codingResultType = REJECT_TIMEOUT or REJECT_BY_USER."
       activities:
         type: array
         items:
