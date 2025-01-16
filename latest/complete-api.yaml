@@ -4,7 +4,7 @@ info:
   description: 'Statistic Data from the Coding Solution. The events are generated after every coding operation, currently for video and manual coding. The data is crucial for querying and analysis in AWS Athena by DWH LS OPS.'
   contact:
     name: erkennen.codieren.pakete@post.ch
-  version: 4.1.0-feature-add-vmc-countrykey.2
+  version: 4.1.0-feature-add-vmc-countrykey.3
 host: 'server:8080'
 basePath: Kafka
 paths:
@@ -413,7 +413,7 @@ definitions:
         minimum: 0
       countryKey:
         type: string
-        description: "Identifies the country physically located on the mailpiece (ISO 3166-1 alpha-2)\nThis field can be null if there was no coding done for the coding task.\ne.g. codingResultType = REJECT_TIMEOUT or REJECT_BY_USER."
+        description: "Identifies the country physically located on the mailpiece (ISO 3166-1 alpha-2)\nThis field can be null if there was no coding done for the coding task.\ne.g. codingResultType = REJECT_TIMEOUT or REJECT_TECHNICAL."
       activities:
         type: array
         items:
